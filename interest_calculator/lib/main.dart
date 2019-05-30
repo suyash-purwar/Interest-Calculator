@@ -24,6 +24,12 @@ class SIForm extends StatefulWidget {
 class _SIForm extends State<SIForm> {
   List<String> _currencies = ["Rupees", "Dollars", "Pounds", "Others"];
   final double _minimumPadding = 5.0;
+  String _currentItemSelected = "Rupees";
+  String displayResult = "";
+
+  TextEditingController principalController = TextEditingController();
+  TextEditingController roiController = TextEditingController();
+  TextEditingController termController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +53,7 @@ class _SIForm extends State<SIForm> {
                   child: TextField(
                     style: textStyle,
                     keyboardType: TextInputType.number,
+                    controller: principalController,
                     decoration: InputDecoration(
                       labelText: "Principal",
                       labelStyle: textStyle,
@@ -64,6 +71,7 @@ class _SIForm extends State<SIForm> {
                     bottom: _minimumPadding
                   ),
                   child: TextField(
+                    controller: roiController,
                     style: textStyle,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
@@ -85,7 +93,8 @@ class _SIForm extends State<SIForm> {
                   child: Row(
                   children: <Widget>[
                     Expanded(child: TextField(
-                      style: textStyle,
+                      style: textStyle,                        
+                      controller: termController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: "Term",
@@ -108,9 +117,12 @@ class _SIForm extends State<SIForm> {
                         );
                       }).toList(),
 
-                      value: 'Rupees',
+                      value: _currentItemSelected,
 
                       onChanged: (String newSelectedValue) {
+                        setState(() {
+                          _currentItemSelected = newSelectedValue;
+                        });
                       },
                     )),
                   ],
@@ -129,7 +141,9 @@ class _SIForm extends State<SIForm> {
                           textColor: Theme.of(context).primaryColorDark,
                           child: Text("Calculate", textScaleFactor: 1.5),
                           onPressed: () {
-
+                            setState(() {
+                              displayResult = _calculateTotalReturns();
+                            });
                           },
                         )
                       ),
@@ -140,7 +154,9 @@ class _SIForm extends State<SIForm> {
 
                           child: Text("Reset", textScaleFactor: 1.5),
                           onPressed: () {
-
+                            setState(() {
+                              _clearInputFields();
+                            });
                           },
                         )
                       ),
@@ -150,7 +166,7 @@ class _SIForm extends State<SIForm> {
 
                 Padding(
                   padding: EdgeInsets.all(_minimumPadding * 2),
-                  child: Text("Todo text", style: textStyle)
+                  child: Text(displayResult, style: textStyle)
                 )
               ],
             ),
@@ -165,5 +181,24 @@ class _SIForm extends State<SIForm> {
     Image image = Image(image: assetImg, width: 125, height: 125);
 
     return Container(child: image, margin: EdgeInsets.all(_minimumPadding * 10));
+  }
+
+  String _calculateTotalReturns() {
+    double principal = double.parse(principalController.text);
+    double roi = double.parse(roiController.text);
+    double term = double.parse(termController.text);
+
+    double totalAmountPayable = principal + (principal * roi * term) / 100;
+
+    String reponse = "After ${term.round()} years, your investment will be worth of $totalAmountPayable $_currentItemSelected";
+    return reponse;
+  }
+
+  void _clearInputFields() {
+    principalController.clear();
+    roiController.clear();
+    termController.clear();
+    _currentItemSelected = _currencies[0];
+    displayResult = "";
   }
 }
